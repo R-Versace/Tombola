@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tabellone della Tombola</title>
+  <meta name="description" content="Tabellone digitale per la Tombola Napoletana con detti napoletani">
+  <meta name="theme-color" content="#667eea">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="container-fluid">
+    <h1>🎲 Tabellone della Tombola 🎲</h1>
+    
+    <div class="premi-container" id="premiContainer"></div>
+    
+    <div class="tabellone-wrapper" id="tabellone"></div>
+    
+    <div class="controlli">
+      <div class="ultimo-numero-container">
+        <div class="ultimo-numero" id="ultimoNumero">
+          <span class="text-muted" style="font-size: 0.6em;">--</span>
+        </div>
+        <div class="detto-napoletano" id="dettoNapoletano"></div>
+        <div class="ultimi-numeri" id="ultimiNumeri"></div>
+      </div>
+      
+      <button class="btn btn-custom btn-estrai" onclick="generaNumero()">
+        🎱 Estrai
+      </button>
+
+      <div class="auto-estrazione-box">
+        <button class="btn btn-custom btn-auto" id="btnAutoEstrazione" onclick="window.toggleEstrazioneAutomatica()">
+          ▶️ Auto
+        </button>
+        <div class="auto-intervallo">
+          <input type="number" id="intervalloAuto" class="form-control form-control-sm" value="6" min="2" max="30" step="1" onchange="window.aggiornaIntervalloAuto()">
+          <small>sec</small>
+        </div>
+      </div>
+      
+      <div class="dropdown dropup">
+        <button class="btn btn-custom btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+          ⚙️ Menu
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#" onclick="window.resetEstrazione(); return false;">🔄 Reset Estrazione</a></li>
+          <li><a class="dropdown-item" href="#" onclick="window.nuovaPartita(); return false;">🆕 Nuova Partita</a></li>
+          <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); window.generaCartelle(50);">🎴 Genera 50 Cartelle PDF</a></li>
+          <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); window.generaCartelle(100);">🎴 Genera 100 Cartelle PDF</a></li>
+          <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); window.apriCartelleGioco();">🃏 Le Mie Cartelle</a></li>
+          <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); window.apriStorico();">📜 Storico Estrazioni</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="#" onclick="window.mostraDonazione(); return false;">💝 Fai una Donazione</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="px-3 pb-1"><small class="text-muted">🎨 Tema</small></li>
+          <li class="px-2" id="listaTemi"></li>
+          <li><hr class="dropdown-divider"></li>
+          <li class="px-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleDetti" checked onchange="window.toggleDetti()">
+              <label class="form-check-label" for="toggleDetti">
+                Detti Napoletani
+              </label>
+            </div>
+          </li>
+          <li class="px-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleAnimazioni" checked onchange="window.toggleAnimazioni()">
+              <label class="form-check-label" for="toggleAnimazioni">
+                Animazioni
+              </label>
+            </div>
+          </li>
+          <li class="px-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleSuoni" checked onchange="window.toggleSuoni()">
+              <label class="form-check-label" for="toggleSuoni">
+                Effetti Sonori
+              </label>
+            </div>
+          </li>
+          <li class="px-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleVoce" checked onchange="window.toggleVoce()">
+              <label class="form-check-label" for="toggleVoce">
+                Voce Banditore
+              </label>
+            </div>
+          </li>
+          <li class="px-3 pb-1"><small class="text-muted">🎙️ Scegli Voce</small></li>
+          <li class="px-2 lista-voci-scroll" id="listaVociContainer"></li>
+          <li class="px-3">
+            <label class="form-label small mb-0 text-muted">Velocità</label>
+            <input type="range" class="form-range" id="sliderVelocita" min="0.6" max="1.3" step="0.05" value="0.95" oninput="window.aggiornaParametriVoce()">
+          </li>
+          <li class="px-3">
+            <label class="form-label small mb-0 text-muted">Tono</label>
+            <input type="range" class="form-range" id="sliderTono" min="0.7" max="1.4" step="0.05" value="1.0" oninput="window.aggiornaParametriVoce()">
+          </li>
+          <li><a class="dropdown-item" href="#" onclick="event.preventDefault(); window.testaVoce();">🔊 Prova la Voce</a></li>
+        </ul>
+      </div>
+      
+      <div class="contatore">
+        <span id="contatore">0</span> / 90
+      </div>
+    </div>
+    
+    <div class="footer">
+      Created by <strong><a href="https://www.linkedin.com/in/rocco-versace" target="_blank">Rocco Versace</a></strong>
+    </div>
+  </div>
+
+  <!-- Modal Donazione -->
+  <div class="modal fade" id="donazioneModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">💝 Supporta lo Sviluppo</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p>Se ti piace questa tombola e vuoi supportare lo sviluppo, puoi fare una donazione!</p>
+          <p class="text-muted small">Ogni contributo è molto apprezzato 🙏</p>
+          
+          <div id="donate-button-container" class="mt-3">
+            <div id="donate-button"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Scelta Cartelle -->
+  <div class="modal fade" id="cartelleModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🎴 Genera Cartelle PDF</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <p>Quante cartelle vuoi generare?</p>
+          <div class="d-grid gap-3 mt-4">
+            <button class="btn btn-lg btn-primary" onclick="window.generaCartelle(50)">
+              📄 50 Cartelle
+              <small class="d-block text-white-50">17 pagine (3 cartelle per foglio)</small>
+            </button>
+            <button class="btn btn-lg btn-success" onclick="window.generaCartelle(100)">
+              📚 100 Cartelle
+              <small class="d-block text-white-50">34 pagine (3 cartelle per foglio)</small>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Budget -->
+  <div class="modal fade" id="budgetModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">💰 Imposta Budget e Premi</h5>
+        </div>
+        <div class="modal-body">
+          <div class="mb-4">
+            <label for="budgetInput" class="form-label">Budget totale per i premi:</label>
+            <div class="input-group input-group-lg">
+              <span class="input-group-text">€</span>
+              <input type="number" class="form-control" id="budgetInput" placeholder="Es: 100" min="5" step="5" value="100" oninput="aggiornaAnteprima()">
+            </div>
+          </div>
+          
+          <h6 class="mb-3">📊 Personalizza le percentuali:</h6>
+          
+          <div class="premio-row">
+            <div class="premio-label">Ambo</div>
+            <div class="premio-percentuale">
+              <div class="input-group">
+                <input type="number" class="form-control" id="percAmbo" value="5" min="0" max="100" step="1" oninput="aggiornaAnteprima()">
+                <span class="input-group-text">%</span>
+              </div>
+            </div>
+            <div class="premio-anteprima" id="anteprimaAmbo">€5.00</div>
+          </div>
+          
+          <div class="premio-row">
+            <div class="premio-label">Terno</div>
+            <div class="premio-percentuale">
+              <div class="input-group">
+                <input type="number" class="form-control" id="percTerno" value="10" min="0" max="100" step="1" oninput="aggiornaAnteprima()">
+                <span class="input-group-text">%</span>
+              </div>
+            </div>
+            <div class="premio-anteprima" id="anteprimaTerno">€10.00</div>
+          </div>
+          
+          <div class="premio-row">
+            <div class="premio-label">Quaterna</div>
+            <div class="premio-percentuale">
+              <div class="input-group">
+                <input type="number" class="form-control" id="percQuaterna" value="15" min="0" max="100" step="1" oninput="aggiornaAnteprima()">
+                <span class="input-group-text">%</span>
+              </div>
+            </div>
+            <div class="premio-anteprima" id="anteprimaQuaterna">€15.00</div>
+          </div>
+          
+          <div class="premio-row">
+            <div class="premio-label">Cinquina</div>
+            <div class="premio-percentuale">
+              <div class="input-group">
+                <input type="number" class="form-control" id="percCinquina" value="20" min="0" max="100" step="1" oninput="aggiornaAnteprima()">
+                <span class="input-group-text">%</span>
+              </div>
+            </div>
+            <div class="premio-anteprima" id="anteprimaCinquina">€20.00</div>
+          </div>
+          
+          <div class="premio-row">
+            <div class="premio-label">Tombola</div>
+            <div class="premio-percentuale">
+              <div class="input-group">
+                <input type="number" class="form-control" id="percTombola" value="50" min="0" max="100" step="1" oninput="aggiornaAnteprima()">
+                <span class="input-group-text">%</span>
+              </div>
+            </div>
+            <div class="premio-anteprima" id="anteprimaTombola">€50.00</div>
+          </div>
+          
+          <div class="totale-percentuale" id="totalePerc">
+            Totale: 100% ✓
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="resetPercentuali()">
+            🔄 Reset Percentuali
+          </button>
+          <button type="button" class="btn btn-primary btn-lg" onclick="impostaBudget()" id="btnIniziaPartita">
+            ✅ Inizia la Partita
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Le Mie Cartelle (verifica automatica) -->
+  <div class="modal fade" id="cartelleGiocoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🃏 Le Mie Cartelle</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">Genera una o più cartelle: verranno segnate automaticamente man mano che escono i numeri, e riceverai un avviso per ogni ambo, terno, quaterna, cinquina o tombola.</p>
+          <div class="d-grid mb-3">
+            <button class="btn btn-primary" onclick="window.generaNuovaCartellaGioco()">➕ Aggiungi una Cartella</button>
+          </div>
+          <div id="cartelleGiocoContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Storico Estrazioni -->
+  <div class="modal fade" id="storicoModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">📜 Storico Estrazioni</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="storico-scroll">
+            <table class="table storico-tabella">
+              <thead>
+                <tr><th>#</th><th>Orario</th><th>Evento</th></tr>
+              </thead>
+              <tbody id="storicoBody"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" onclick="window.esportaStoricoTxt()">💾 Esporta .txt</button>
+          <button type="button" class="btn btn-outline-secondary" onclick="window.esportaStoricoPDF()">📄 Esporta PDF</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://www.paypalobjects.com/donate/sdk/donate-sdk.js" charset="UTF-8"></script>
+  <script src="assets/script/script.js"></script>
+</body>
+</html>
