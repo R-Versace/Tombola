@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://r-versace.github.io/Tombola/sitemap.xml
