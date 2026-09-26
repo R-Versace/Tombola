@@ -7,28 +7,54 @@ import { aggiungiStorico } from './storico.js';
 import { suonoVincita, suonoTombola } from './audio.js';
 import { salvaPartita } from './salvataggio.js';
 
+// Genera una cartella valida secondo le regole reali della tombola:
+// - 3 righe, 9 colonne (1-9, 10-19, ..., 80-90), 5 numeri per riga, 15 in totale;
+// - ogni colonna ha almeno 1 numero (mai vuota) e al massimo 3;
+// - i numeri di una stessa colonna sono in ordine crescente dall'alto in basso.
 export function generaCartellaValida() {
-  let cartella = Array(3).fill().map(() => Array(9).fill(null));
-  
-  for (let riga = 0; riga < 3; riga++) {
-    let colonne = [];
-    while (colonne.length < 5) {
-      let col = Math.floor(Math.random() * 9);
-      if (!colonne.includes(col)) colonne.push(col);
+  // 1) Quanti numeri avrà ciascuna colonna (1-3), totale 15: si parte da 1 a testa
+  //    (9 colonne) e si distribuiscono a caso i 6 numeri restanti, max +2 a colonna.
+  const numeriPerColonna = Array(9).fill(1);
+  let daDistribuire = 15 - 9;
+  while (daDistribuire > 0) {
+    const col = Math.floor(Math.random() * 9);
+    if (numeriPerColonna[col] < 3) {
+      numeriPerColonna[col]++;
+      daDistribuire--;
     }
-    colonne.sort((a, b) => a - b);
-    
-    colonne.forEach(col => {
-      let min = col === 0 ? 1 : col * 10;
-      let max = col === 8 ? 90 : (col + 1) * 10 - 1;
-      let num;
-      do {
-        num = Math.floor(Math.random() * (max - min + 1)) + min;
-      } while (cartella.some(r => r[col] === num));
-      cartella[riga][col] = num;
-    });
   }
-  
+
+  // 2) Per ogni colonna si scelgono a caso le righe che conterranno un numero, poi si
+  //    ritenta finché ogni riga non risulta con esattamente 5 colonne assegnate.
+  let rigaPerColonna;
+  let numeriPerRiga;
+  let tentativi = 0;
+  do {
+    rigaPerColonna = numeriPerColonna.map((quante) => (
+      [0, 1, 2].sort(() => Math.random() - 0.5).slice(0, quante)
+    ));
+    numeriPerRiga = [0, 0, 0];
+    rigaPerColonna.forEach((righe) => righe.forEach((r) => numeriPerRiga[r]++));
+    tentativi++;
+  } while (numeriPerRiga.some((n) => n !== 5) && tentativi < 500);
+
+  // 3) Si generano i numeri veri e propri di ogni colonna (nel range della decina),
+  //    si ordinano dal più piccolo al più grande e si piazzano nelle righe scelte.
+  const cartella = Array(3).fill().map(() => Array(9).fill(null));
+  for (let col = 0; col < 9; col++) {
+    const righe = [...rigaPerColonna[col]].sort((a, b) => a - b);
+    const min = col === 0 ? 1 : col * 10;
+    const max = col === 8 ? 90 : (col + 1) * 10 - 1;
+
+    const numeriUnici = new Set();
+    while (numeriUnici.size < righe.length) {
+      numeriUnici.add(Math.floor(Math.random() * (max - min + 1)) + min);
+    }
+    const numeriOrdinati = [...numeriUnici].sort((a, b) => a - b);
+
+    righe.forEach((riga, i) => { cartella[riga][col] = numeriOrdinati[i]; });
+  }
+
   return cartella;
 }
 

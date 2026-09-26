@@ -16,7 +16,7 @@ import { apriStorico, esportaStoricoTxt, esportaStoricoPDF, renderStorico } from
 import {
   generaNuovaCartellaGioco, rimuoviCartellaGioco, apriCartelleGioco, renderCartelleGioco
 } from './cartelle.js';
-import { generaCartelle } from './cartelle-pdf.js';
+import { generaCartelle, paginePerCartelle, MINIMO_CARTELLE } from './cartelle-pdf.js';
 import { aggiornaAnteprima, resetPercentuali, impostaBudget, mostraPremi } from './premi.js';
 import { creaTabellone, generaNumero, ridisegnaEstrazione } from './estrazione.js';
 import { toggleEstrazioneAutomatica, aggiornaIntervalloAuto, inizializzaAuto } from './auto.js';
@@ -73,8 +73,7 @@ function collegaControlli() {
   };
   collegaVoceDiMenu('menuReset', resetEstrazione);
   collegaVoceDiMenu('menuNuovaPartita', nuovaPartita);
-  collegaVoceDiMenu('menuCartelle50', () => generaCartelle(50));
-  collegaVoceDiMenu('menuCartelle100', () => generaCartelle(100));
+  collegaVoceDiMenu('menuCartelle', () => mostraModal('cartelleModal'));
   collegaVoceDiMenu('menuApriCartelle', apriCartelleGioco);
   collegaVoceDiMenu('menuApriStorico', apriStorico);
   collegaVoceDiMenu('menuDonazione', mostraDonazione);
@@ -126,9 +125,32 @@ function collegaModali() {
   $('btnEsportaStoricoTxt').addEventListener('click', esportaStoricoTxt);
   $('btnEsportaStoricoPDF').addEventListener('click', esportaStoricoPDF);
 
-  // Modale "Genera Cartelle PDF" (raggiungibile in futuro da un pulsante dedicato)
-  $('cartelleModalBtn50')?.addEventListener('click', () => generaCartelle(50));
-  $('cartelleModalBtn100')?.addEventListener('click', () => generaCartelle(100));
+  // Modale "Genera Cartelle PDF": quantità libera, minimo 10.
+  const aggiornaStimaPagine = () => {
+    const quantita = Math.max(MINIMO_CARTELLE, parseInt($('quantitaCartelle').value, 10) || 0);
+    $('cartelleStimaPagine').textContent = `≈ ${paginePerCartelle(quantita)} pagine (3 cartelle per foglio)`;
+  };
+  $('quantitaCartelle').addEventListener('input', aggiornaStimaPagine);
+  $('btnCartelleMeno').addEventListener('click', () => {
+    const attuale = parseInt($('quantitaCartelle').value, 10) || MINIMO_CARTELLE;
+    $('quantitaCartelle').value = Math.max(MINIMO_CARTELLE, attuale - 10);
+    aggiornaStimaPagine();
+  });
+  $('btnCartellePiu').addEventListener('click', () => {
+    const attuale = parseInt($('quantitaCartelle').value, 10) || MINIMO_CARTELLE;
+    $('quantitaCartelle').value = attuale + 10;
+    aggiornaStimaPagine();
+  });
+  $('btnGeneraCartelle').addEventListener('click', () => {
+    const quantita = parseInt($('quantitaCartelle').value, 10);
+    if (isNaN(quantita) || quantita < MINIMO_CARTELLE) {
+      alert(`Inserisci almeno ${MINIMO_CARTELLE} cartelle`);
+      return;
+    }
+    generaCartelle(quantita);
+    nascondiModal('cartelleModal');
+  });
+  aggiornaStimaPagine();
 }
 
 // ===================== Salvataggio: riprendi o inizia una nuova partita =====================

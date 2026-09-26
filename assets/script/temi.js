@@ -9,6 +9,7 @@ export const THEMES = {
     bgGradient: "linear-gradient(135deg, #c41e3a 0%, #165b33 50%, #c41e3a 100%)",
     primary: "#c41e3a", secondary: "#165b33", accent: "#ffd700",
     titleEmoji: "🎄", corner1: "❄️", corner2: "🎄", particella: "❄️",
+    pdf: { nome: "Natale", frase: "Buon Natale e Buona Tombola!" },
     personaggi: [
       { emoji: '🎅🦌🦌🦌', nome: 'Babbo Natale con le renne' },
       { emoji: '🎅', nome: 'Babbo Natale' },

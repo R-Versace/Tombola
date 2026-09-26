@@ -94,8 +94,7 @@
         <ul class="dropdown-menu">
           <li><a class="dropdown-item" href="#" id="menuReset">🔄 Reset Estrazione</a></li>
           <li><a class="dropdown-item" href="#" id="menuNuovaPartita">🆕 Nuova Partita</a></li>
-          <li><a class="dropdown-item" href="#" id="menuCartelle50">🎴 Genera 50 Cartelle PDF</a></li>
-          <li><a class="dropdown-item" href="#" id="menuCartelle100">🎴 Genera 100 Cartelle PDF</a></li>
+          <li><a class="dropdown-item" href="#" id="menuCartelle">🎴 Genera Cartelle PDF</a></li>
           <li><a class="dropdown-item" href="#" id="menuApriCartelle">🃏 Le Mie Cartelle</a></li>
           <li><a class="dropdown-item" href="#" id="menuApriStorico">📜 Storico Estrazioni</a></li>
           <li><hr class="dropdown-divider"></li>
@@ -197,16 +196,15 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body text-center">
-          <p>Quante cartelle vuoi generare?</p>
-          <div class="d-grid gap-3 mt-4">
-            <button class="btn btn-lg btn-primary" id="cartelleModalBtn50">
-              📄 50 Cartelle
-              <small class="d-block text-white-50">17 pagine (3 cartelle per foglio)</small>
-            </button>
-            <button class="btn btn-lg btn-success" id="cartelleModalBtn100">
-              📚 100 Cartelle
-              <small class="d-block text-white-50">34 pagine (3 cartelle per foglio)</small>
-            </button>
+          <p>Quante cartelle vuoi generare? (minimo 10)</p>
+          <div class="input-group input-group-lg justify-content-center mx-auto" style="max-width: 220px;">
+            <button class="btn btn-outline-secondary" type="button" id="btnCartelleMeno">−</button>
+            <input type="number" class="form-control text-center" id="quantitaCartelle" value="50" min="10" step="10">
+            <button class="btn btn-outline-secondary" type="button" id="btnCartellePiu">+</button>
+          </div>
+          <p class="text-muted small mt-2" id="cartelleStimaPagine">≈ 17 pagine (3 cartelle per foglio)</p>
+          <div class="d-grid mt-4">
+            <button class="btn btn-lg btn-primary" id="btnGeneraCartelle">📄 Genera il PDF</button>
           </div>
         </div>
       </div>
