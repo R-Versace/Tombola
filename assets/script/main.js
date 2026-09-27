@@ -151,6 +151,17 @@ function collegaModali() {
     nascondiModal('cartelleModal');
   });
   aggiornaStimaPagine();
+
+  // Fine Partita: propone una nuova partita o una donazione (chiudo prima questo modal,
+  // poi apro l'altro, per non sovrapporre due modal contemporaneamente).
+  $('btnNuovaPartitaDopoFine').addEventListener('click', () => {
+    $('finePartitaModal').addEventListener('hidden.bs.modal', () => nuovaPartita(), { once: true });
+    nascondiModal('finePartitaModal');
+  });
+  $('btnDonaDopoFine').addEventListener('click', () => {
+    $('finePartitaModal').addEventListener('hidden.bs.modal', () => mostraDonazione(), { once: true });
+    nascondiModal('finePartitaModal');
+  });
 }
 
 // ===================== Salvataggio: riprendi o inizia una nuova partita =====================

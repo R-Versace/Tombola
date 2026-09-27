@@ -1,7 +1,7 @@
 // Budget, ripartizione percentuale e premi assegnati.
 
 import { stato, TIPI_PREMIO } from './state.js';
-import { $, nascondiModal } from './ui.js';
+import { $, mostraModal, nascondiModal } from './ui.js';
 import { suonoVincita, suonoTombola } from './audio.js';
 import { salvaPartita } from './salvataggio.js';
 
@@ -67,8 +67,12 @@ export function mostraPremi() {
     div.addEventListener('click', () => {
       premio.vinto = !premio.vinto;
       if (premio.vinto) {
-        if (key === 'tombola') suonoTombola();
-        else suonoVincita(RINTOCCHI[key] || 1);
+        if (key === 'tombola') {
+          suonoTombola();
+          mostraModal('finePartitaModal');
+        } else {
+          suonoVincita(RINTOCCHI[key] || 1);
+        }
       }
       mostraPremi();
       salvaPartita();
