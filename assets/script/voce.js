@@ -1,35 +1,22 @@
-// Voce del banditore (Web Speech API): scelta della voce, velocità, tono,
-// lettura "alla banditore" dei numeri e ripetizione dell'ultimo numero.
+// Voce del banditore: sintesi vocale (Web Speech API), scelta automatica della voce
+// italiana più naturale disponibile, lettura "alla banditore" e pulsante Ripeti.
 
-import { stato, opzioni } from './state.js';
-import { dettiNapoletani } from './detti.js';
-import { testoAnnuncio } from './lettura.js';
-import { $, escapeHtml, mostraToast } from './ui.js';
+import { opzioni } from './state.js';
+import { $ } from './ui.js';
+import { cifrePerCifra } from './lettura.js';
 
 const supportoVoce = ('speechSynthesis' in window);
 let vociDisponibili = [];
 let voceSelezionataNome = null;
 let voceRate = 0.95;
 let vocePitch = 1.0;
+let ultimoTestoPronunciato = null;
 
-// ---------- Preferenze salvate ----------
-
-function caricaPreferenze() {
-  try {
-    voceSelezionataNome = localStorage.getItem('tombolaVoceNome') || null;
-    voceRate = parseFloat(localStorage.getItem('tombolaVoceRate')) || 0.95;
-    vocePitch = parseFloat(localStorage.getItem('tombolaVocePitch')) || 1.0;
-    // la lettura delle cifre è attiva di default: si salva solo se l'utente la spegne
-    opzioni.leggiCifre = localStorage.getItem('tombolaLeggiCifre') !== '0';
-  } catch (e) { /* si usano i valori di default */ }
-}
-
-export function impostaLeggiCifre(attiva) {
-  opzioni.leggiCifre = attiva;
-  try { localStorage.setItem('tombolaLeggiCifre', attiva ? '1' : '0'); } catch (e) { /* non salvata */ }
-}
-
-// ---------- Elenco delle voci ----------
+try {
+  voceSelezionataNome = localStorage.getItem('tombolaVoceNome') || null;
+  voceRate = parseFloat(localStorage.getItem('tombolaVoceRate')) || 0.95;
+  vocePitch = parseFloat(localStorage.getItem('tombolaVocePitch')) || 1.0;
+} catch (e) { /* storage non disponibile */ }
 
 function caricaVociDisponibili() {
   if (!supportoVoce) return;
@@ -37,8 +24,8 @@ function caricaVociDisponibili() {
   renderListaVoci();
 }
 
-// Assegna un punteggio di "naturalezza" a ciascuna voce disponibile,
-// per proporre di default quella meno robotica sul dispositivo dell'utente.
+// Assegna un punteggio di "naturalezza" a ciascuna voce disponibile, per proporre di
+// default quella meno robotica sul dispositivo dell'utente.
 function punteggioVoce(v) {
   let p = 0;
   const n = (v.name || '').toLowerCase();
@@ -50,7 +37,7 @@ function punteggioVoce(v) {
   if (n.includes('federica') || n.includes('elsa') || n.includes('alice') || n.includes('female')) p += 2;
   if (n.includes('compact')) p -= 3;
   if (n.includes('espeak') || n.includes('e-speak')) p -= 5;
-  if (!v.localService) p += 1; // le voci di rete (Google/Microsoft Online) sono spesso più naturali
+  if (!v.localService) p += 1; // le voci di rete sono spesso più naturali
   return p;
 }
 
@@ -67,10 +54,10 @@ function scegliVoceItaliana() {
     const scelta = italiane.find((v) => v.name === voceSelezionataNome);
     if (scelta) return scelta;
   }
-  return italiane[0]; // la migliore secondo il punteggio
+  return italiane[0];
 }
 
-export function renderListaVoci() {
+function renderListaVoci() {
   const cont = $('listaVociContainer');
   if (!cont) return;
   const italiane = vociItalianeOrdinate();
@@ -78,17 +65,17 @@ export function renderListaVoci() {
     cont.innerHTML = '<div class="text-muted small px-1">Nessuna voce italiana trovata sul dispositivo</div>';
     return;
   }
-  const nomeAttiva = scegliVoceItaliana()?.name;
+  const vocePreferita = scegliVoceItaliana();
+  const nomeAttiva = vocePreferita ? vocePreferita.name : null;
   cont.innerHTML = italiane.map((v) => {
     const attiva = v.name === nomeAttiva ? 'attiva' : '';
-    const nome = escapeHtml(v.name);
-    return `<div class="voce-scelta ${attiva}" title="${nome}" data-azione="scegli-voce" data-nome="${nome}">${nome}</div>`;
+    return `<div class="voce-scelta ${attiva}" title="${v.name}" data-azione="scegli-voce" data-nome="${v.name.replace(/"/g, '&quot;')}">${v.name}</div>`;
   }).join('');
 }
 
 export function selezionaVoce(nome) {
   voceSelezionataNome = nome;
-  try { localStorage.setItem('tombolaVoceNome', nome); } catch (e) { /* non salvata */ }
+  try { localStorage.setItem('tombolaVoceNome', nome); } catch (e) { /* storage non disponibile */ }
   renderListaVoci();
   pronunciaTesto('Ciao, sono io la nuova voce del banditore!');
 }
@@ -99,21 +86,16 @@ export function aggiornaParametriVoce() {
   try {
     localStorage.setItem('tombolaVoceRate', voceRate);
     localStorage.setItem('tombolaVocePitch', vocePitch);
-  } catch (e) { /* non salvate */ }
+  } catch (e) { /* storage non disponibile */ }
 }
 
-// ---------- Parlato ----------
-
-export function fermaVoce() {
-  if (supportoVoce) speechSynthesis.cancel();
-}
-
-export function pronunciaTesto(testo) {
+function pronunciaTesto(testo) {
   if (!opzioni.voce) return;
   if (!supportoVoce) {
     console.warn('Questo browser non supporta la sintesi vocale (Web Speech API).');
     return;
   }
+  ultimoTestoPronunciato = testo;
   try {
     // Annulla eventuali frasi accodate/bloccate prima di parlare
     speechSynthesis.cancel();
@@ -137,50 +119,47 @@ export function pronunciaTesto(testo) {
   }
 }
 
+export function fermaVoce() {
+  if (supportoVoce) speechSynthesis.cancel();
+}
+
 export function testaVoce() {
   pronunciaTesto('Prova voce. Si sente il banditore?');
 }
 
-// ---------- Lettura alla banditore ----------
-
-// "quarantasette. quattro, sette. <detto>" (il detto solo se attivo nel menu)
-export function annunciaNumero(numero) {
-  pronunciaTesto(testoAnnuncio(numero, {
-    detto: opzioni.detti ? dettiNapoletani[numero] : '',
-    leggiCifre: opzioni.leggiCifre
-  }));
+// Annuncia un numero appena estratto, nello stile "alla banditore": il numero (la sintesi
+// vocale legge "47" come "quarantasette" naturalmente), il detto napoletano se attivo, e
+// infine le cifre lette una per una per chi non ha sentito bene il primo annuncio.
+export function annunciaNumero(numero, detto) {
+  const parti = [String(numero)];
+  if (opzioni.detti && detto) parti.push(detto);
+  if (opzioni.leggiCifre && numero >= 10) parti.push(cifrePerCifra(numero));
+  pronunciaTesto(parti.join('. '));
 }
 
 export function ripetiUltimoNumero() {
-  const estratti = stato.numeriEstratti;
-  if (estratti.length === 0) return;
-  if (!opzioni.voce) {
-    mostraToast('La voce del banditore è disattivata', '🔇');
-    return;
-  }
-  annunciaNumero(estratti[estratti.length - 1]);
+  if (!ultimoTestoPronunciato) return;
+  pronunciaTesto(ultimoTestoPronunciato);
 }
 
-// ---------- Avvio ----------
+export function impostaLeggiCifre(attivo) {
+  opzioni.leggiCifre = attivo;
+}
 
 export function inizializzaVoce() {
-  caricaPreferenze();
-
-  // Sincronizza slider e interruttore con le preferenze salvate
   $('sliderVelocita').value = voceRate;
   $('sliderTono').value = vocePitch;
-  $('toggleCifre').checked = opzioni.leggiCifre;
-
-  if (!supportoVoce) return;
-  caricaVociDisponibili();
-  speechSynthesis.addEventListener('voiceschanged', caricaVociDisponibili);
-
-  // Bug noto di Chrome: la sintesi vocale si "blocca" dopo ~15s di inattività.
-  // Questo workaround la mantiene sveglia mentre sta parlando.
-  setInterval(() => {
-    if (speechSynthesis.speaking && !speechSynthesis.paused) {
-      speechSynthesis.pause();
-      speechSynthesis.resume();
-    }
-  }, 8000);
+  renderListaVoci();
+  if (supportoVoce) {
+    caricaVociDisponibili();
+    speechSynthesis.addEventListener('voiceschanged', caricaVociDisponibili);
+    // Bug noto di Chrome: la sintesi vocale si "blocca" dopo ~15s di inattività.
+    // Questo workaround la mantiene sveglia mentre sta parlando.
+    setInterval(() => {
+      if (speechSynthesis.speaking && !speechSynthesis.paused) {
+        speechSynthesis.pause();
+        speechSynthesis.resume();
+      }
+    }, 8000);
+  }
 }

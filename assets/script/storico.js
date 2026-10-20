@@ -1,7 +1,7 @@
-// Storico della partita: estrazioni e vincite, con esportazione in TXT e PDF.
+// Storico degli eventi di partita (estrazioni e vincite), con esportazione.
 
 import { stato } from './state.js';
-import { $, escapeHtml, mostraModal } from './ui.js';
+import { $, mostraModal } from './ui.js';
 
 export function aggiungiStorico(testo, evento) {
   stato.storicoEventi.push({ testo, evento: !!evento, orario: new Date().toLocaleTimeString('it-IT') });
@@ -15,11 +15,10 @@ export function azzeraStorico() {
 export function renderStorico() {
   const body = $('storicoBody');
   if (!body) return;
-  const eventi = stato.storicoEventi;
-  body.innerHTML = eventi.slice().reverse().map((e, i) => {
-    const num = eventi.length - i;
+  body.innerHTML = stato.storicoEventi.slice().reverse().map((e, i) => {
+    const num = stato.storicoEventi.length - i;
     const classe = e.evento ? 'storico-riga-evento' : '';
-    return `<tr class="${classe}"><td>${num}</td><td>${escapeHtml(e.orario)}</td><td>${escapeHtml(e.testo)}</td></tr>`;
+    return `<tr class="${classe}"><td>${num}</td><td>${e.orario}</td><td>${e.testo}</td></tr>`;
   }).join('');
 }
 

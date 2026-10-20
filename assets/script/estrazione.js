@@ -1,39 +1,34 @@
-// Tabellone e estrazione dei numeri.
+// Tabellone e logica di estrazione dei numeri.
 
 import { stato, opzioni } from './state.js';
 import { $ } from './ui.js';
 import { dettiNapoletani } from './detti.js';
 import { suonoEstrazione } from './audio.js';
-import { annunciaNumero, pronunciaTesto } from './voce.js';
+import { annunciaNumero } from './voce.js';
 import { mostraPersonaggio } from './animazioni.js';
 import { aggiungiStorico } from './storico.js';
 import { verificaVinciteCartelle } from './cartelle.js';
 import { salvaPartita } from './salvataggio.js';
 
-export const EVENTO_FINE_PARTITA = 'tombola:finita';
-
 export function creaTabellone() {
   const tabellone = $('tabellone');
+  tabellone.innerHTML = '';
 
-  // Crea 6 cartelle
+  // Crea 6 cartelle del tabellone (non quelle dei giocatori: qui sono solo i 90 numeri)
   for (let cartella = 0; cartella < 6; cartella++) {
     const cartellaDiv = document.createElement('div');
     cartellaDiv.className = 'cartella';
 
-    // Calcola il blocco di 30 numeri (0-29, 30-59, 60-89)
     const blocco = Math.floor(cartella / 2);
-    // Calcola l'offset all'interno del blocco (0-4 o 5-9)
     const offset = (cartella % 2) * 5;
 
-    // Per ogni cartella, crea 15 numeri disposti per righe
     for (let riga = 0; riga < 3; riga++) {
       for (let colonna = 0; colonna < 5; colonna++) {
         const numero = (blocco * 30) + offset + colonna + 1 + (riga * 10);
-
         const div = document.createElement('div');
         div.className = 'numero';
         div.id = 'num-' + numero;
-        div.innerText = numero;
+        div.textContent = numero;
         cartellaDiv.appendChild(div);
       }
     }
@@ -43,25 +38,24 @@ export function creaTabellone() {
 }
 
 function aggiornaUltimiNumeri() {
+  const container = $('ultimiNumeri');
   const ultimi = stato.numeriEstratti.slice(-5).reverse();
-  $('ultimiNumeri').innerHTML = ultimi.map((n) => `<div class="ultimo-mini">${n}</div>`).join('');
+  container.innerHTML = ultimi.map((n) => `<div class="ultimo-mini">${n}</div>`).join('');
 }
 
-// Ridisegna tabellone, ultimo numero, contatore e ultimi 5 a partire dallo stato.
-// Serve dopo un ripristino o un reset, e a ogni nuova estrazione.
+// Ridisegna lo stato dell'estrazione sul tabellone: serve dopo un ripristino o un reset,
+// e a ogni nuova estrazione.
 export function ridisegnaEstrazione() {
   const estratti = stato.numeriEstratti;
+  document.querySelectorAll('.numero').forEach((el) => {
+    el.classList.toggle('estratto', estratti.includes(parseInt(el.id.replace('num-', ''), 10)));
+  });
 
-  document.querySelectorAll('.numero').forEach((el) => el.classList.remove('estratto'));
-  estratti.forEach((n) => { const cella = $('num-' + n); if (cella) cella.classList.add('estratto'); });
-
+  const ultimoNumero = $('ultimoNumero');
   if (estratti.length === 0) {
-    $('ultimoNumero').innerHTML = '<span class="text-muted" style="font-size: 0.6em;">--</span>';
-    $('dettoNapoletano').textContent = '';
+    ultimoNumero.innerHTML = '<span class="text-muted" style="font-size: 0.6em;">--</span>';
   } else {
-    const ultimo = estratti[estratti.length - 1];
-    $('ultimoNumero').innerHTML = `<span>${ultimo}</span>`;
-    $('dettoNapoletano').textContent = opzioni.detti ? (dettiNapoletani[ultimo] || '') : '';
+    ultimoNumero.innerHTML = `<span>${estratti[estratti.length - 1]}</span>`;
   }
 
   aggiornaUltimiNumeri();
@@ -72,13 +66,24 @@ export function ridisegnaEstrazione() {
 export function applicaNumeroEstratto(numero) {
   if (stato.numeriEstratti.includes(numero)) return;
   stato.numeriEstratti.push(numero);
-  ridisegnaEstrazione();
 
+  const cella = $('num-' + numero);
+  if (cella) cella.classList.add('estratto');
+  $('ultimoNumero').innerHTML = `<span>${numero}</span>`;
+  $('contatore').textContent = stato.numeriEstratti.length;
+  $('btnRipeti').disabled = false;
+
+  const detto = dettiNapoletani[numero] || '';
+  if (opzioni.detti) $('dettoNapoletano').textContent = detto;
+  else $('dettoNapoletano').textContent = '';
+
+  aggiornaUltimiNumeri();
   suonoEstrazione();
-  if (opzioni.animazioni) mostraPersonaggio(numero);
-  annunciaNumero(numero);
 
-  const detto = dettiNapoletani[numero];
+  if (opzioni.animazioni) mostraPersonaggio(numero);
+
+  annunciaNumero(numero, detto);
+
   aggiungiStorico(`Estratto il numero ${numero}${detto ? ' - ' + detto : ''}`);
   verificaVinciteCartelle(numero);
   salvaPartita();
@@ -87,9 +92,6 @@ export function applicaNumeroEstratto(numero) {
 export function generaNumero() {
   if (stato.numeriEstratti.length >= 90) {
     alert('Tutti i numeri sono stati estratti!');
-    pronunciaTesto('Tutti i numeri sono stati estratti!');
-    // l'estrazione automatica (auto.js) ascolta questo evento e si ferma
-    document.dispatchEvent(new CustomEvent(EVENTO_FINE_PARTITA));
     return;
   }
 

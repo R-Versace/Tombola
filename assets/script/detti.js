@@ -1,4 +1,5 @@
-// Smorfia napoletana: numero -> detto tradizionale
+// Detti napoletani tradizionali della tombola, numero per numero.
+
 export const dettiNapoletani = {
   1: "L'Italia",
   2: "'A piccerella",
@@ -24,8 +25,8 @@ export const dettiNapoletani = {
   22: "'O pazzo",
   23: "'O scemo",
   24: "'E gguardie",
-  25: "Natale",
-  26: "Nanninella",
+  25: 'Natale',
+  26: 'Nanninella',
   27: "'O cantaro",
   28: "'E zizze",
   29: "'O pate d''e ccriature",
@@ -59,7 +60,7 @@ export const dettiNapoletani = {
   57: "'O gobbo",
   58: "'O paccotto",
   59: "'E pile",
-  60: "Se lamenta",
+  60: 'Se lamenta',
   61: "'O cacciatore",
   62: "'O muorto acciso",
   63: "'A sposa",
@@ -74,7 +75,7 @@ export const dettiNapoletani = {
   72: "'A maraviglia",
   73: "L'uspitale",
   74: "'A grotta",
-  75: "Pulecenella",
+  75: 'Pulecenella',
   76: "'A funtana",
   77: "'E diavule",
   78: "'A bella figliola",

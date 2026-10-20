@@ -1,4 +1,4 @@
-// Effetti sonori sintetizzati con la Web Audio API (nessun file audio da caricare).
+// Effetti sonori: sintesi via Web Audio API, nessun file audio da scaricare.
 
 import { opzioni } from './state.js';
 
@@ -21,7 +21,7 @@ function suonaCampana(frequenzaBase, durata, volume) {
     const ctx = getAudioCtx();
     const now = ctx.currentTime;
     const parziali = [1, 1.5, 2, 2.6, 3.4, 4.2, 5.4];
-    const guadagni  = [1, 0.55, 0.4, 0.28, 0.18, 0.12, 0.08];
+    const guadagni = [1, 0.55, 0.4, 0.28, 0.18, 0.12, 0.08];
     const vol = volume || 0.2;
     parziali.forEach((rapporto, i) => {
       const osc = ctx.createOscillator();
@@ -37,13 +37,13 @@ function suonaCampana(frequenzaBase, durata, volume) {
       osc.start(now);
       osc.stop(now + durata);
     });
-  } catch(e) { /* audio non disponibile */ }
+  } catch (e) { /* audio non disponibile */ }
 }
 
 // ----- Suono di estrazione: stile "carillon" -----
-// Due note morbide in salita (Sol5 -> Re6, una quinta), timbro caldo con armoniche
-// che si spengono prima della fondamentale, filtrate e con un leggero eco.
-// Bus condiviso creato una sola volta: passa-basso (toglie la durezza) + eco morbido.
+// Due note morbide in salita (Sol5 -> Re6), timbro caldo con armoniche che si spengono
+// prima della fondamentale, filtrate e con un leggero eco. Bus condiviso creato una sola
+// volta: passa-basso (toglie la durezza) + eco morbido.
 let busEstrazione = null;
 function getBusEstrazione(ctx) {
   if (busEstrazione) return busEstrazione;
@@ -62,8 +62,8 @@ function getBusEstrazione(ctx) {
   livelloEco.gain.value = 0.32;
 
   ingresso.connect(filtro);
-  filtro.connect(ctx.destination);   // suono diretto
-  filtro.connect(eco);               // suono verso l'eco
+  filtro.connect(ctx.destination);
+  filtro.connect(eco);
   eco.connect(feedback);
   feedback.connect(eco);
   eco.connect(livelloEco);
@@ -77,14 +77,14 @@ function suonaNotaDolce(frequenza, ritardo, durata, volume) {
   const ctx = getAudioCtx();
   const bus = getBusEstrazione(ctx);
   const inizio = ctx.currentTime + ritardo;
-  const parziali = [1, 2, 3, 4.2];      // armoniche: più "rotonde" delle campane
+  const parziali = [1, 2, 3, 4.2];
   const guadagni = [1, 0.28, 0.1, 0.04];
   parziali.forEach((rapporto, i) => {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
     osc.frequency.value = frequenza * rapporto;
-    const fine = inizio + durata / (1 + i * 0.9); // le armoniche alte svaniscono prima
+    const fine = inizio + durata / (1 + i * 0.9);
     gain.gain.setValueAtTime(0.0001, inizio);
     gain.gain.linearRampToValueAtTime(volume * guadagni[i], inizio + 0.006);
     gain.gain.exponentialRampToValueAtTime(0.0001, fine);
@@ -98,15 +98,15 @@ function suonaNotaDolce(frequenza, ritardo, durata, volume) {
 export function suonoEstrazione() {
   if (!opzioni.suoni) return;
   try {
-    suonaNotaDolce(783.99, 0, 0.7, 0.16);      // Sol5
-    suonaNotaDolce(1174.66, 0.11, 0.9, 0.18);  // Re6
-  } catch(e) { /* audio non disponibile */ }
+    suonaNotaDolce(783.99, 0, 0.7, 0.16);
+    suonaNotaDolce(1174.66, 0.11, 0.9, 0.18);
+  } catch (e) { /* audio non disponibile */ }
 }
 
 // Scampanio di festeggiamento: il numero di rintocchi cresce con l'importanza del premio
 // (1 per l'ambo, fino a 4 per la cinquina), per dare più enfasi ai premi più grandi.
 export function suonoVincita(rintocchi) {
-  const note = [523.25, 659.25, 784.0, 987.77]; // Do-Mi-Sol-Si, arpeggio maggiore
+  const note = [523.25, 659.25, 784.0, 987.77];
   const n = Math.max(1, Math.min(rintocchi || 1, note.length));
   for (let i = 0; i < n; i++) {
     setTimeout(() => suonaCampana(note[i], 1.1, 0.22), i * 300);

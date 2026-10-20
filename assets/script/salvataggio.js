@@ -1,131 +1,78 @@
-// Salvataggio automatico della partita in localStorage.
-//
-// Si salva a ogni cambiamento (estrazione, premio assegnato, cartella aggiunta/rimossa,
-// reset, nuovo budget). All'avvio, se c'è una partita in corso, l'app propone di riprenderla.
-//
-// Nota sui dati salvati: le caselle segnate sulle cartelle NON vengono salvate, perché si
-// ricavano dai numeri estratti; così non possono mai andare fuori sincrono con il tabellone.
+// Salvataggio automatico della partita in corso (localStorage) e ripristino all'avvio.
+// Le caselle segnate sulle cartelle NON vengono salvate come tali: si ricalcolano sempre
+// dai numeri estratti, così non possono mai andare fuori sincrono col tabellone.
 
-import { stato, creaPremiIniziali, TIPI_PREMIO } from './state.js';
+import { stato } from './state.js';
 
 const CHIAVE = 'tombolaPartita';
-const VERSIONE = 1;
-
-// ---------- Salvataggio ----------
 
 export function salvaPartita() {
   try {
-    const snapshot = {
-      versione: VERSIONE,
-      salvataIl: Date.now(),
+    const mieCartelleSerializzate = stato.mieCartelle.map((c) => ({
+      id: c.id,
+      numeri: c.numeri,
+      vinte: c.vinte
+    }));
+
+    const dati = {
       numeriEstratti: stato.numeriEstratti,
+      tema: stato.tema,
+      modalitaPremi: stato.modalitaPremi,
       premi: stato.premi,
-      storicoEventi: stato.storicoEventi,
+      prossimoPremioId: stato.prossimoPremioId,
+      mieCartelle: mieCartelleSerializzate,
       prossimoCartellaId: stato.prossimoCartellaId,
-      mieCartelle: stato.mieCartelle.map((c) => ({ id: c.id, numeri: c.numeri, vinte: c.vinte }))
+      storicoEventi: stato.storicoEventi,
+      salvataIl: new Date().toISOString()
     };
-    localStorage.setItem(CHIAVE, JSON.stringify(snapshot));
-  } catch (e) {
-    // localStorage non disponibile (navigazione privata, quota piena...): si gioca senza salvataggio
-  }
+    localStorage.setItem(CHIAVE, JSON.stringify(dati));
+  } catch (e) { /* storage non disponibile o pieno: si continua senza salvare */ }
 }
 
 export function cancellaPartitaSalvata() {
-  try { localStorage.removeItem(CHIAVE); } catch (e) { /* niente da fare */ }
-}
-
-// ---------- Lettura e validazione ----------
-
-const interoTra = (n, min, max) => Number.isInteger(n) && n >= min && n <= max;
-
-function validaCartella(c) {
-  if (!c || !interoTra(c.id, 1, Number.MAX_SAFE_INTEGER)) return null;
-  if (!Array.isArray(c.numeri) || c.numeri.length !== 3) return null;
-  for (const riga of c.numeri) {
-    if (!Array.isArray(riga) || riga.length !== 9) return null;
-    if (!riga.every((n) => n === null || interoTra(n, 1, 90))) return null;
-  }
-  const vinte = {};
-  TIPI_PREMIO.forEach((tipo) => { vinte[tipo] = !!(c.vinte && c.vinte[tipo]); });
-  return { id: c.id, numeri: c.numeri, vinte };
-}
-
-// Restituisce una versione "pulita" del salvataggio, oppure null se i dati non sono affidabili.
-function valida(grezzo) {
-  if (!grezzo || typeof grezzo !== 'object' || grezzo.versione !== VERSIONE) return null;
-
-  const numeri = grezzo.numeriEstratti;
-  if (!Array.isArray(numeri) || !numeri.every((n) => interoTra(n, 1, 90))) return null;
-  if (new Set(numeri).size !== numeri.length) return null;
-
-  const premi = creaPremiIniziali();
-  TIPI_PREMIO.forEach((tipo) => {
-    const p = grezzo.premi && grezzo.premi[tipo];
-    if (!p) return;
-    const importo = parseFloat(p.importo);
-    premi[tipo].importo = Number.isFinite(importo) && importo >= 0 ? importo.toFixed(2) : 0;
-    premi[tipo].vinto = !!p.vinto;
-  });
-
-  const storico = Array.isArray(grezzo.storicoEventi)
-    ? grezzo.storicoEventi
-        .filter((e) => e && typeof e.testo === 'string')
-        .map((e) => ({
-          testo: e.testo,
-          evento: !!e.evento,
-          orario: typeof e.orario === 'string' ? e.orario : ''
-        }))
-    : [];
-
-  const cartelle = Array.isArray(grezzo.mieCartelle)
-    ? grezzo.mieCartelle.map(validaCartella).filter(Boolean)
-    : [];
-
-  const idMassimo = cartelle.reduce((max, c) => Math.max(max, c.id), 0);
-  const prossimo = interoTra(grezzo.prossimoCartellaId, 1, Number.MAX_SAFE_INTEGER)
-    ? Math.max(grezzo.prossimoCartellaId, idMassimo + 1)
-    : idMassimo + 1;
-
-  return {
-    salvataIl: Number.isFinite(grezzo.salvataIl) ? grezzo.salvataIl : null,
-    numeriEstratti: numeri,
-    premi,
-    storicoEventi: storico,
-    mieCartelle: cartelle,
-    prossimoCartellaId: prossimo
-  };
+  try { localStorage.removeItem(CHIAVE); } catch (e) { /* storage non disponibile */ }
 }
 
 export function leggiPartitaSalvata() {
   try {
-    const testo = localStorage.getItem(CHIAVE);
-    if (!testo) return null;
-    return valida(JSON.parse(testo));
+    const grezzo = localStorage.getItem(CHIAVE);
+    return grezzo ? JSON.parse(grezzo) : null;
   } catch (e) {
     return null;
   }
 }
 
-// Vale la pena proporre la ripresa solo se c'è davvero qualcosa da riprendere.
-export function haPartitaDaRiprendere(salvataggio) {
-  return !!salvataggio && (salvataggio.numeriEstratti.length > 0 || salvataggio.mieCartelle.length > 0);
+// Valida la struttura minima prima di proporre il ripristino: dati corrotti, o salvati da
+// una versione precedente dell'app con un formato diverso, vengono ignorati senza errori.
+export function haPartitaDaRiprendere(dati) {
+  if (!dati || typeof dati !== 'object') return false;
+  if (!Array.isArray(dati.numeriEstratti)) return false;
+  if (!Array.isArray(dati.premi)) return false;
+  if (!Array.isArray(dati.mieCartelle)) return false;
+  return dati.numeriEstratti.length > 0 || dati.mieCartelle.length > 0 || dati.premi.length > 0;
 }
 
-// ---------- Ripristino ----------
+export function applicaSalvataggio(dati) {
+  stato.numeriEstratti = Array.isArray(dati.numeriEstratti) ? dati.numeriEstratti : [];
+  stato.tema = typeof dati.tema === 'string' ? dati.tema : stato.tema;
+  stato.modalitaPremi = (dati.modalitaPremi === 'budget' || dati.modalitaPremi === 'lista') ? dati.modalitaPremi : null;
+  stato.premi = Array.isArray(dati.premi) ? dati.premi : [];
+  stato.prossimoPremioId = Number.isInteger(dati.prossimoPremioId) ? dati.prossimoPremioId : stato.premi.length + 1;
+  stato.prossimoCartellaId = Number.isInteger(dati.prossimoCartellaId) ? dati.prossimoCartellaId : 1;
+  stato.storicoEventi = Array.isArray(dati.storicoEventi) ? dati.storicoEventi : [];
 
-// Copia il salvataggio (già validato) nello stato dell'app. Non tocca l'interfaccia:
-// dopo la chiamata bisogna ridisegnare tabellone, premi, storico e cartelle.
-export function applicaSalvataggio(salvataggio) {
-  const estratti = new Set(salvataggio.numeriEstratti);
-
-  stato.numeriEstratti = salvataggio.numeriEstratti.slice();
-  TIPI_PREMIO.forEach((tipo) => { Object.assign(stato.premi[tipo], salvataggio.premi[tipo]); });
-  stato.storicoEventi = salvataggio.storicoEventi.slice();
-  stato.prossimoCartellaId = salvataggio.prossimoCartellaId;
-  stato.mieCartelle = salvataggio.mieCartelle.map((c) => ({
-    id: c.id,
-    numeri: c.numeri,
-    vinte: c.vinte,
-    segnati: new Set(c.numeri.flat().filter((n) => n !== null && estratti.has(n)))
-  }));
+  stato.mieCartelle = (Array.isArray(dati.mieCartelle) ? dati.mieCartelle : []).map((c) => {
+    const carta = {
+      id: c.id,
+      numeri: c.numeri,
+      segnati: new Set(),
+      vinte: c.vinte || { ambo: false, terno: false, quaterna: false, cinquina: false, tombola: false }
+    };
+    // Ricalcola le caselle segnate dai numeri già estratti, invece di fidarsi di un
+    // eventuale elenco salvato: così cartella e tabellone restano sempre coerenti.
+    stato.numeriEstratti.forEach((n) => {
+      if (carta.numeri.some((riga) => riga.includes(n))) carta.segnati.add(n);
+    });
+    return carta;
+  });
 }

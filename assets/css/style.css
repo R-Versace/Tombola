@@ -331,17 +331,6 @@ h1::after {
   margin-top: 5px;
 }
 
-.btn-ripeti {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  padding: 3px 12px;
-  border-radius: 8px;
-}
-
-.btn-ripeti:disabled {
-  opacity: 0.4;
-}
-
 .ultimo-mini {
   background: #e9ecef;
   border: 2px solid #999;
@@ -640,4 +629,145 @@ h1::after {
 .storico-scroll {
   max-height: 50vh;
   overflow-y: auto;
+}
+
+/* ===== Pulsante Ripeti (lettura "alla banditore") ===== */
+.btn-ripeti {
+  margin-top: 8px;
+  font-size: 0.8rem;
+  padding: 3px 12px;
+  border-radius: 8px;
+}
+.btn-ripeti:disabled {
+  opacity: 0.4;
+}
+
+/* ===== Premi raggruppati per categoria (supporta più premi per categoria) ===== */
+.categoria-premi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.categoria-premi-titolo {
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-secondary);
+  opacity: 0.8;
+}
+.categoria-premi-righe {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ===== Scelta modalità premi (Budget vs Lista Premi) ===== */
+.scelta-modalita-premi {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+.scelta-modalita-card {
+  flex: 1 1 180px;
+  background: linear-gradient(145deg, #f8f9fa, #e9ecef);
+  border: 3px solid transparent;
+  border-radius: 12px;
+  padding: 20px 15px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.scelta-modalita-card:hover {
+  border-color: var(--color-accent);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+.scelta-modalita-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 8px;
+}
+.scelta-modalita-titolo {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+.scelta-modalita-desc {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* ===== Budget: quantità di premi per categoria ===== */
+.premio-quantita {
+  flex: 0 0 70px;
+}
+.premio-quantita input {
+  text-align: center;
+}
+
+.spesa-totale-prevista {
+  text-align: center;
+  font-size: 0.85rem;
+  color: #666;
+  margin-top: 6px;
+}
+
+/* ===== Lista Premi: bozza prima di iniziare la partita ===== */
+.premi-lista-riga {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+.premi-lista-categoria {
+  flex: 0 0 90px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  color: var(--color-primary);
+  background: #fff;
+  border: 1px solid var(--color-primary);
+  border-radius: 20px;
+  padding: 2px 10px;
+  text-align: center;
+}
+.premi-lista-nome {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+/* ===== Lista Premi: pulsanti di riordino ===== */
+.premi-lista-ordina {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.premi-lista-ordina button {
+  padding: 0 6px;
+  line-height: 1.3;
+  font-size: 0.65rem;
+}
+
+/* ===== Nome del vincitore sul premio ===== */
+.premio-vincitore {
+  font-size: 0.7rem;
+  color: var(--color-secondary);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+/* ===== Intestazione colonne nel modal Budget ===== */
+.premio-row-intestazione {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #888;
+  text-align: center;
+  margin-bottom: 2px;
 }

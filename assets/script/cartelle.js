@@ -1,11 +1,15 @@
-// Cartelle: generazione di una cartella valida e "Le mie cartelle",
-// cioè cartelle personali segnate automaticamente a ogni estrazione.
+// Cartelle: generazione di una cartella valida e "Le mie cartelle", cioè cartelle
+// personali segnate automaticamente a ogni estrazione.
 
 import { stato } from './state.js';
 import { $, mostraModal, mostraToast } from './ui.js';
 import { aggiungiStorico } from './storico.js';
 import { suonoVincita, suonoTombola } from './audio.js';
 import { salvaPartita } from './salvataggio.js';
+
+const NOMI_VINCITA = { ambo: 'Ambo', terno: 'Terno', quaterna: 'Quaterna', cinquina: 'Cinquina', tombola: 'TOMBOLA! 🎉' };
+const RINTOCCHI = { ambo: 1, terno: 2, quaterna: 3, cinquina: 4 };
+const LIVELLI_RIGA = [['ambo', 2], ['terno', 3], ['quaterna', 4], ['cinquina', 5]];
 
 // Genera una cartella valida secondo le regole reali della tombola:
 // - 3 righe, 9 colonne (1-9, 10-19, ..., 80-90), 5 numeri per riga, 15 in totale;
@@ -57,12 +61,6 @@ export function generaCartellaValida() {
 
   return cartella;
 }
-
-// Il menu ⚙️ si apre verso l'alto (i controlli stanno in fondo alla pagina):
-
-const NOMI_VINCITA = { ambo: 'Ambo', terno: 'Terno', quaterna: 'Quaterna', cinquina: 'Cinquina', tombola: 'TOMBOLA! 🎉' };
-const RINTOCCHI = { ambo: 1, terno: 2, quaterna: 3, cinquina: 4 };
-const LIVELLI_RIGA = [['ambo', 2], ['terno', 3], ['quaterna', 4], ['cinquina', 5]];
 
 export function generaNuovaCartellaGioco() {
   const carta = {

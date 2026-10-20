@@ -1,47 +1,41 @@
-// Generazione del PDF con le cartelle da stampare (minimo 10, quante se ne vogliono),
-// 3 per pagina, colorate in base al tema grafico attualmente scelto.
+// Generazione del PDF con le cartelle da stampare (3 per pagina), con lo stile del tema scelto.
 
 import { generaCartellaValida } from './cartelle.js';
 import { stato } from './state.js';
 import { THEMES } from './temi.js';
 
 export const MINIMO_CARTELLE = 10;
+const CARTELLE_PER_PAGINA = 3;
 
 export function paginePerCartelle(quantita) {
-  return Math.max(1, Math.ceil(quantita / 3));
+  return Math.ceil(Math.max(MINIMO_CARTELLE, quantita) / CARTELLE_PER_PAGINA);
 }
 
-// "#c41e3a" -> [196, 30, 58]
 function hexInRgb(hex) {
   const pulito = hex.replace('#', '');
-  return [0, 2, 4].map((i) => parseInt(pulito.slice(i, i + 2), 16));
+  const valore = parseInt(pulito.length === 3 ? pulito.split('').map((c) => c + c).join('') : pulito, 16);
+  return [(valore >> 16) & 255, (valore >> 8) & 255, valore & 255];
 }
 
-// Schiarisce un colore verso il bianco: fattore 0 = colore pieno, 1 = bianco.
-function schiarisci([r, g, b], fattore) {
-  return [r, g, b].map((c) => Math.round(c + (255 - c) * fattore));
+// Mescola un colore con il bianco, per ottenere una tinta chiara adatta allo sfondo delle celle.
+function schiarisci([r, g, b], quantita = 0.85) {
+  return [r, g, b].map((c) => Math.round(c + (255 - c) * quantita));
 }
 
-// Layout di una singola cartella: un rigo di intestazione colorato + la griglia 3x9,
-// racchiusi in un bordo arrotondato. Le colonne alternano una leggera tinta del tema
-// per ricordare le cartelle di carta a righe colorate.
+const ALTEZZA_CARTELLA = 90;
+const CARD_X = 14;
+const CARD_W = 182;
+const HEADER_H = 10;
+const PAD = 2;
+const GRID_X = 20;
 const CELL_W = 19;
 const CELL_H = 18;
-const GRID_W = CELL_W * 9;
-const GRID_H = CELL_H * 3;
-const HEADER_H = 9;
-const PAD = 3;
-const CARD_W = GRID_W + PAD * 2;
-const CARD_H = HEADER_H + GRID_H + PAD * 2;
-const SLOT_H = CARD_H + 9;
-const MARGINE_ALTO = 14;
-const GRID_X = 20;
-const CARD_X = GRID_X - PAD;
+const CARD_H = HEADER_H + PAD + CELL_H * 3 + 4;
 
 function disegnaCartella(doc, numero, griglia, tema, offsetY) {
   const [pr, pg, pb] = hexInRgb(tema.primary);
   const [sr, sg, sb] = hexInRgb(tema.secondary);
-  const cardTop = MARGINE_ALTO + offsetY;
+  const cardTop = 8 + offsetY;
   const gridTop = cardTop + HEADER_H + PAD;
 
   // Sfondo della cartella: bordo arrotondato con una tinta molto leggera del colore primario.
@@ -90,26 +84,19 @@ function disegnaCartella(doc, numero, griglia, tema, offsetY) {
   doc.roundedRect(CARD_X, cardTop, CARD_W, CARD_H, 3, 3, 'S');
 }
 
-// Genera un PDF con `quantita` cartelle (minimo 10), 3 per pagina, usando i colori
-// del tema grafico attualmente selezionato.
 export function generaCartelle(quantita) {
-  const n = Math.max(MINIMO_CARTELLE, Math.round(quantita) || 0);
+  const n = Math.max(MINIMO_CARTELLE, Math.round(quantita) || MINIMO_CARTELLE);
   const tema = THEMES[stato.tema] || THEMES.classico;
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF();
 
   for (let i = 1; i <= n; i++) {
-    const posizioneNellaPagina = (i - 1) % 3;
-    if (i > 1 && posizioneNellaPagina === 0) doc.addPage();
-
-    const offsetY = posizioneNellaPagina * SLOT_H;
+    const posizione = (i - 1) % CARTELLE_PER_PAGINA;
+    if (i > 1 && posizione === 0) doc.addPage();
+    const offsetY = posizione * ALTEZZA_CARTELLA;
     disegnaCartella(doc, i, generaCartellaValida(), tema, offsetY);
   }
-
-  // Ripristina lo stato di default del documento prima di salvarlo.
-  doc.setTextColor(0, 0, 0);
-  doc.setFont('helvetica', 'normal');
 
   doc.save(n + '_cartelle_tombola.pdf');
 }

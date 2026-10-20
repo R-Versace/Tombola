@@ -1,13 +1,17 @@
-// Piccole utilità per l'interfaccia condivise dai vari moduli.
+// Utility DOM condivise da più moduli.
 
 export const $ = (id) => document.getElementById(id);
 
 export function mostraModal(id) {
-  window.bootstrap.Modal.getOrCreateInstance($(id)).show();
+  const el = $(id);
+  if (!el) return;
+  window.bootstrap.Modal.getOrCreateInstance(el).show();
 }
 
 export function nascondiModal(id) {
-  const istanza = window.bootstrap.Modal.getInstance($(id));
+  const el = $(id);
+  if (!el) return;
+  const istanza = window.bootstrap.Modal.getInstance(el);
   if (istanza) istanza.hide();
 }
 
@@ -15,17 +19,10 @@ export function modalAperto() {
   return !!document.querySelector('.modal.show');
 }
 
-export function escapeHtml(testo) {
-  return String(testo).replace(/[&<>"']/g, (c) => (
-    { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
-  ));
-}
-
-// Avviso temporaneo in alto (usato per le vincite e per i messaggi rapidi).
-export function mostraToast(testo, icona = '🏆') {
+export function mostraToast(testo) {
   const div = document.createElement('div');
   div.className = 'toast-vincita';
-  div.textContent = `${icona} ${testo}`;
+  div.textContent = '🏆 ' + testo;
   document.body.appendChild(div);
   requestAnimationFrame(() => div.classList.add('mostra'));
   setTimeout(() => {

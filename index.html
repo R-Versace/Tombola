@@ -105,7 +105,7 @@
           <li><hr class="dropdown-divider"></li>
           <li class="px-3">
             <div class="form-check form-switch">
-              <input class="form-check-input" type="checkbox" id="toggleDetti" checked>
+              <input class="form-check-input" type="checkbox" id="toggleDetti">
               <label class="form-check-label" for="toggleDetti">
                 Detti Napoletani
               </label>
@@ -232,6 +232,31 @@
     </div>
   </div>
 
+  <!-- Modal Scelta Modalità Premi -->
+  <div class="modal fade" id="modalitaPremiModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🎲 Come vuoi gestire i premi?</h5>
+        </div>
+        <div class="modal-body">
+          <div class="scelta-modalita-premi">
+            <button type="button" class="scelta-modalita-card" id="btnSceltaBudget">
+              <div class="scelta-modalita-emoji">💰</div>
+              <div class="scelta-modalita-titolo">Budget</div>
+              <div class="scelta-modalita-desc">Imposta un budget e dividilo in percentuale tra le categorie di vincita</div>
+            </button>
+            <button type="button" class="scelta-modalita-card" id="btnSceltaLista">
+              <div class="scelta-modalita-emoji">🎁</div>
+              <div class="scelta-modalita-titolo">Lista Premi</div>
+              <div class="scelta-modalita-desc">Crea una lista di premi (oggetti, buoni...) e assegnali alle categorie</div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Modal Budget -->
   <div class="modal fade" id="budgetModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -248,7 +273,15 @@
             </div>
           </div>
           
-          <h6 class="mb-3">📊 Personalizza le percentuali:</h6>
+          <h6 class="mb-1">📊 Personalizza le percentuali:</h6>
+          <p class="text-muted small mb-2">La colonna <strong>"N° vincite"</strong> è per quante volte vuoi assegnare quel premio (es. 2 per avere due premi Ambo separati): l'importo di quella categoria viene diviso tra tutte le vincite, così il totale resta sempre dentro il budget.</p>
+
+          <div class="premio-row premio-row-intestazione">
+            <div class="premio-label"></div>
+            <div class="premio-percentuale">% Budget</div>
+            <div class="premio-quantita">N° vincite</div>
+            <div class="premio-anteprima">A premio</div>
+          </div>
           
           <div class="premio-row">
             <div class="premio-label">Ambo</div>
@@ -257,6 +290,9 @@
                 <input type="number" class="form-control" id="percAmbo" value="5" min="0" max="100" step="1">
                 <span class="input-group-text">%</span>
               </div>
+            </div>
+            <div class="premio-quantita">
+              <input type="number" class="form-control" id="quantAmbo" value="1" min="1" max="9" step="1" title="In quante vincite separate dividere il premio Ambo (es. 2 = due Ambi distinti)">
             </div>
             <div class="premio-anteprima" id="anteprimaAmbo">€5.00</div>
           </div>
@@ -269,6 +305,9 @@
                 <span class="input-group-text">%</span>
               </div>
             </div>
+            <div class="premio-quantita">
+              <input type="number" class="form-control" id="quantTerno" value="1" min="1" max="9" step="1" title="In quante vincite separate dividere il premio Terno">
+            </div>
             <div class="premio-anteprima" id="anteprimaTerno">€10.00</div>
           </div>
           
@@ -279,6 +318,9 @@
                 <input type="number" class="form-control" id="percQuaterna" value="15" min="0" max="100" step="1">
                 <span class="input-group-text">%</span>
               </div>
+            </div>
+            <div class="premio-quantita">
+              <input type="number" class="form-control" id="quantQuaterna" value="1" min="1" max="9" step="1" title="In quante vincite separate dividere il premio Quaterna">
             </div>
             <div class="premio-anteprima" id="anteprimaQuaterna">€15.00</div>
           </div>
@@ -291,6 +333,9 @@
                 <span class="input-group-text">%</span>
               </div>
             </div>
+            <div class="premio-quantita">
+              <input type="number" class="form-control" id="quantCinquina" value="1" min="1" max="9" step="1" title="In quante vincite separate dividere il premio Cinquina">
+            </div>
             <div class="premio-anteprima" id="anteprimaCinquina">€20.00</div>
           </div>
           
@@ -302,20 +347,64 @@
                 <span class="input-group-text">%</span>
               </div>
             </div>
+            <div class="premio-quantita">
+              <input type="number" class="form-control" id="quantTombola" value="1" min="1" max="9" step="1" title="In quante vincite separate dividere il premio Tombola">
+            </div>
             <div class="premio-anteprima" id="anteprimaTombola">€50.00</div>
           </div>
           
           <div class="totale-percentuale" id="totalePerc">
-            Totale: 100% ✓
+            Totale percentuali: 100% ✓
           </div>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary me-auto" id="btnIndietroBudget">← Indietro</button>
           <button type="button" class="btn btn-secondary" id="btnResetPercentuali">
             🔄 Reset Percentuali
           </button>
           <button type="button" class="btn btn-primary btn-lg" id="btnIniziaPartita">
             ✅ Inizia la Partita
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Lista Premi -->
+  <div class="modal fade" id="listaPremiModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">🎁 Lista Premi</h5>
+        </div>
+        <div class="modal-body">
+          <p class="text-muted small">Aggiungi i premi che hai preparato e assegna a ciascuno la categoria di vincita. Puoi aggiungere più premi per la stessa categoria (es. due premi sull'Ambo). <strong>Deve esserci almeno un premio sulla Tombola</strong>, altrimenti la partita non avrà un modo per concludersi.</p>
+          <div class="row g-2 align-items-end mb-3">
+            <div class="col-7">
+              <label class="form-label small mb-1">Nome del premio</label>
+              <input type="text" class="form-control" id="listaPremioNome" placeholder="Es: Buono spesa €20" maxlength="60">
+            </div>
+            <div class="col-3">
+              <label class="form-label small mb-1">Categoria</label>
+              <select class="form-select" id="listaPremioCategoria">
+                <option value="ambo">Ambo</option>
+                <option value="terno">Terno</option>
+                <option value="quaterna">Quaterna</option>
+                <option value="cinquina">Cinquina</option>
+                <option value="tombola">Tombola</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <button type="button" class="btn btn-primary w-100" id="btnAggiungiPremioLista">➕</button>
+            </div>
+          </div>
+          <div id="listaPremiBozzaContainer">
+            <p class="text-muted text-center small">Nessun premio ancora aggiunto.</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary me-auto" id="btnIndietroListaPremi">← Indietro</button>
+          <button type="button" class="btn btn-primary btn-lg" id="btnConfermaListaPremi" disabled>✅ Inizia la Partita</button>
         </div>
       </div>
     </div>

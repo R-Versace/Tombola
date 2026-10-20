@@ -17,7 +17,10 @@ import {
   generaNuovaCartellaGioco, rimuoviCartellaGioco, apriCartelleGioco, renderCartelleGioco
 } from './cartelle.js';
 import { generaCartelle, paginePerCartelle, MINIMO_CARTELLE } from './cartelle-pdf.js';
-import { aggiornaAnteprima, resetPercentuali, impostaBudget, mostraPremi } from './premi.js';
+import {
+  aggiornaAnteprima, resetPercentuali, impostaBudget, mostraPremi,
+  apriListaPremi, aggiungiPremioLista, rimuoviPremioLista, spostaPremioLista, confermaListaPremi
+} from './premi.js';
 import { creaTabellone, generaNumero, ridisegnaEstrazione } from './estrazione.js';
 import { toggleEstrazioneAutomatica, aggiornaIntervalloAuto, inizializzaAuto } from './auto.js';
 import { avviaParticelle, fermaParticelle, riavviaParticelle } from './animazioni.js';
@@ -109,14 +112,51 @@ function collegaListeDinamiche() {
 // ===================== Modali =====================
 
 function collegaModali() {
-  // Budget e premi: un solo listener delegato per i 6 campi numerici dell'anteprima.
+  // Scelta modalità premi: Budget oppure Lista Premi (chiudo questo modal, poi apro
+  // l'altro, per non sovrapporre due modal contemporaneamente).
+  $('btnSceltaBudget').addEventListener('click', () => {
+    $('modalitaPremiModal').addEventListener('hidden.bs.modal', () => mostraModal('budgetModal'), { once: true });
+    nascondiModal('modalitaPremiModal');
+  });
+  $('btnSceltaLista').addEventListener('click', () => {
+    $('modalitaPremiModal').addEventListener('hidden.bs.modal', () => apriListaPremi(), { once: true });
+    nascondiModal('modalitaPremiModal');
+  });
+  $('btnIndietroBudget').addEventListener('click', () => {
+    $('budgetModal').addEventListener('hidden.bs.modal', () => mostraModal('modalitaPremiModal'), { once: true });
+    nascondiModal('budgetModal');
+  });
+  $('btnIndietroListaPremi').addEventListener('click', () => {
+    $('listaPremiModal').addEventListener('hidden.bs.modal', () => mostraModal('modalitaPremiModal'), { once: true });
+    nascondiModal('listaPremiModal');
+  });
+
+  // Budget e premi: un solo listener delegato per i campi numerici dell'anteprima
+  // (percentuali e quantità per categoria).
   $('budgetModal').addEventListener('input', (evento) => {
-    if (evento.target.matches('#budgetInput, #percAmbo, #percTerno, #percQuaterna, #percCinquina, #percTombola')) {
+    if (evento.target.matches(
+      '#budgetInput, #percAmbo, #percTerno, #percQuaterna, #percCinquina, #percTombola,'
+      + ' #quantAmbo, #quantTerno, #quantQuaterna, #quantCinquina, #quantTombola'
+    )) {
       aggiornaAnteprima();
     }
   });
   $('btnResetPercentuali').addEventListener('click', resetPercentuali);
   $('btnIniziaPartita').addEventListener('click', impostaBudget);
+
+  // Lista Premi: aggiunta libera di premi assegnati a una categoria.
+  $('btnAggiungiPremioLista').addEventListener('click', aggiungiPremioLista);
+  $('listaPremioNome').addEventListener('keydown', (evento) => {
+    if (evento.key === 'Enter') { evento.preventDefault(); aggiungiPremioLista(); }
+  });
+  $('listaPremiBozzaContainer').addEventListener('click', (evento) => {
+    const elRimuovi = evento.target.closest('[data-azione="rimuovi-premio-lista"]');
+    if (elRimuovi) { rimuoviPremioLista(parseInt(elRimuovi.dataset.id, 10)); return; }
+
+    const elSposta = evento.target.closest('[data-azione="sposta-premio-lista"]');
+    if (elSposta) spostaPremioLista(parseInt(elSposta.dataset.id, 10), parseInt(elSposta.dataset.direzione, 10));
+  });
+  $('btnConfermaListaPremi').addEventListener('click', confermaListaPremi);
 
   // Le Mie Cartelle
   $('btnAggiungiCartella').addEventListener('click', generaNuovaCartellaGioco);
@@ -170,7 +210,7 @@ function inizializzaSalvataggio() {
   const salvataggio = leggiPartitaSalvata();
 
   if (!haPartitaDaRiprendere(salvataggio)) {
-    mostraModal('budgetModal');
+    mostraModal('modalitaPremiModal');
     return;
   }
 
@@ -195,7 +235,7 @@ function inizializzaSalvataggio() {
 
   $('btnNuovaPartitaDaRipristino').addEventListener('click', () => {
     cancellaPartitaSalvata();
-    ripristinoEl.addEventListener('hidden.bs.modal', () => mostraModal('budgetModal'), { once: true });
+    ripristinoEl.addEventListener('hidden.bs.modal', () => mostraModal('modalitaPremiModal'), { once: true });
     nascondiModal('ripristinoModal');
   }, { once: true });
 

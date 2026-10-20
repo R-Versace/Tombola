@@ -1,34 +1,30 @@
 // Stato condiviso dell'applicazione.
-// Tutti i moduli leggono e modificano questi due oggetti (mai riassegnarli:
-// si cambiano solo le loro proprietà), così restano un'unica fonte di verità.
 
-export const TIPI_PREMIO = ['ambo', 'terno', 'quaterna', 'cinquina', 'tombola'];
-
-export function creaPremiIniziali() {
-  return {
-    ambo:     { nome: 'Ambo',     importo: 0, vinto: false },
-    terno:    { nome: 'Terno',    importo: 0, vinto: false },
-    quaterna: { nome: 'Quaterna', importo: 0, vinto: false },
-    cinquina: { nome: 'Cinquina', importo: 0, vinto: false },
-    tombola:  { nome: 'Tombola',  importo: 0, vinto: false }
-  };
-}
-
-// Dati della partita: sono quelli che vengono salvati in localStorage.
-export const stato = {
-  numeriEstratti: [],          // in ordine di estrazione
-  premi: creaPremiIniziali(),
-  storicoEventi: [],           // { testo, evento, orario }
-  mieCartelle: [],             // { id, numeri, segnati:Set, vinte }
-  prossimoCartellaId: 1,
-  tema: 'natale'               // tema grafico attivo (preferenza, salvata a parte)
-};
-
-// Interruttori del menu ⚙️.
 export const opzioni = {
-  detti: true,
+  detti: false,
   animazioni: true,
   suoni: true,
   voce: true,
-  leggiCifre: true             // "47, quattro, sette"
+  leggiCifre: true
+};
+
+export const CATEGORIE = ['ambo', 'terno', 'quaterna', 'cinquina', 'tombola'];
+export const NOME_CATEGORIA = {
+  ambo: 'Ambo', terno: 'Terno', quaterna: 'Quaterna', cinquina: 'Cinquina', tombola: 'Tombola'
+};
+
+// stato.premi è una LISTA di premi (non più un oggetto con una voce fissa per categoria):
+// { id, categoria: 'ambo'|'terno'|'quaterna'|'cinquina'|'tombola',
+//   tipo: 'denaro'|'oggetto', nome, importo (solo se tipo è 'denaro'), vinto }
+// Questo permette più premi sulla stessa categoria (es. due Ambi) in entrambe le modalità.
+export const stato = {
+  numeriEstratti: [],
+  tema: 'natale',
+  modalitaPremi: null,   // 'budget' | 'lista', impostata quando si conferma la configurazione
+  premi: [],
+  prossimoPremioId: 1,
+  mieCartelle: [],
+  prossimoCartellaId: 1,
+  storicoEventi: [],
+  estrazioneAutomaticaAttiva: false
 };
