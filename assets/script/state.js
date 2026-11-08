@@ -5,7 +5,8 @@ export const opzioni = {
   animazioni: true,
   suoni: true,
   voce: true,
-  leggiCifre: true
+  leggiCifre: true,
+  countdown: true
 };
 
 export const CATEGORIE = ['ambo', 'terno', 'quaterna', 'cinquina', 'tombola'];

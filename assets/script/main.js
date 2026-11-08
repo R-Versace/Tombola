@@ -29,10 +29,15 @@ import {
 } from './salvataggio.js';
 import { mostraDonazione } from './donazione.js';
 import { resetEstrazione, nuovaPartita } from './reset.js';
+import { inizializzaCountdown, impostaCountdown } from './countdown.js';
 
 // ===================== Interruttori del menu =====================
 
 function collegaInterruttori() {
+  $('toggleCountdown').addEventListener('change', () => {
+    impostaCountdown($('toggleCountdown').checked);
+  });
+
   $('toggleDetti').addEventListener('change', () => {
     opzioni.detti = $('toggleDetti').checked;
     if (!opzioni.detti) $('dettoNapoletano').textContent = '';
@@ -253,6 +258,7 @@ function inizializza() {
   applyTheme(temaSalvato(), false);
   inizializzaVoce();
   inizializzaAuto();
+  inizializzaCountdown();
   avviaParticelle();
 
   renderStorico();

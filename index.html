@@ -67,6 +67,8 @@
 <body>
   <div class="container-fluid">
     <h1>🎲 Tabellone della Tombola 🎲</h1>
+
+    <div class="countdown-box" id="countdownBox" aria-live="off"></div>
     
     <div class="premi-container" id="premiContainer"></div>
     
@@ -114,6 +116,14 @@
           <li class="px-3 pb-1"><small class="text-muted">🎨 Tema</small></li>
           <li class="px-2" id="listaTemi"></li>
           <li><hr class="dropdown-divider"></li>
+          <li class="px-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleCountdown" checked>
+              <label class="form-check-label" for="toggleCountdown">
+                Countdown Natale / Capodanno
+              </label>
+            </div>
+          </li>
           <li class="px-3">
             <div class="form-check form-switch">
               <input class="form-check-input" type="checkbox" id="toggleDetti">
