@@ -6,6 +6,10 @@
   <title>Tabellone della Tombola Napoletana Online Gratis</title>
   <meta name="description" content="Tabellone digitale gratuito per la Tombola Napoletana: estrazione automatica dei numeri, detti napoletani, cartelle in PDF, voce del banditore e gestione dei premi.">
   <meta name="theme-color" content="#667eea">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Tombola">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://r-versace.github.io/Tombola/">
 
@@ -24,7 +28,7 @@
   <meta name="twitter:image" content="https://r-versace.github.io/Tombola/icon-192.png">
 
   <link rel="manifest" href="manifest.json">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link rel="icon" type="image/svg+xml" href="assets/favicon/favicon.svg">
   <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
@@ -110,6 +114,7 @@
           <li><a class="dropdown-item" href="#" id="menuCartelle">🎴 Genera Cartelle PDF</a></li>
           <li><a class="dropdown-item" href="#" id="menuApriCartelle">🃏 Le Mie Cartelle</a></li>
           <li><a class="dropdown-item" href="#" id="menuApriStorico">📜 Storico Estrazioni</a></li>
+          <li id="voceInstalla" class="d-none"><a class="dropdown-item" href="#" id="menuInstalla">📲 Installa l'app</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item" href="#" id="menuDonazione">💝 Fai una Donazione</a></li>
           <li><hr class="dropdown-divider"></li>
@@ -137,6 +142,14 @@
               <input class="form-check-input" type="checkbox" id="toggleAnimazioni" checked>
               <label class="form-check-label" for="toggleAnimazioni">
                 Animazioni
+              </label>
+            </div>
+          </li>
+          <li class="px-3">
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="toggleSacchetto" checked>
+              <label class="form-check-label" for="toggleSacchetto">
+                Animazione sacchetto
               </label>
             </div>
           </li>

@@ -9,6 +9,7 @@ import { mostraPersonaggio } from './animazioni.js';
 import { aggiungiStorico } from './storico.js';
 import { verificaVinciteCartelle } from './cartelle.js';
 import { salvaPartita } from './salvataggio.js';
+import { animaEstrazioneSacchetto, estrazioneInCorso } from './sacchetto.js';
 
 export function creaTabellone() {
   const tabellone = $('tabellone');
@@ -90,6 +91,10 @@ export function applicaNumeroEstratto(numero) {
 }
 
 export function generaNumero() {
+  // Con l'animazione del sacchetto un'estrazione dura circa un secondo e mezzo:
+  // finché non è finita, altri clic o tick dell'auto-estrazione vengono ignorati.
+  if (estrazioneInCorso()) return;
+
   if (stato.numeriEstratti.length >= 90) {
     alert('Tutti i numeri sono stati estratti!');
     return;
@@ -100,5 +105,6 @@ export function generaNumero() {
     numero = Math.floor(Math.random() * 90) + 1;
   } while (stato.numeriEstratti.includes(numero));
 
-  applicaNumeroEstratto(numero);
+  if (opzioni.sacchetto) animaEstrazioneSacchetto(numero, () => applicaNumeroEstratto(numero));
+  else applicaNumeroEstratto(numero);
 }

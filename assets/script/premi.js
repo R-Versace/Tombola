@@ -11,10 +11,13 @@ import { $, mostraModal, nascondiModal } from './ui.js';
 import { suonoVincita, suonoTombola } from './audio.js';
 import { salvaPartita } from './salvataggio.js';
 import { aggiungiStorico } from './storico.js';
+import { lanciaCoriandoli } from './coriandoli.js';
 
 const cap = (categoria) => categoria.charAt(0).toUpperCase() + categoria.slice(1);
 const PERCENTUALI_DEFAULT = { ambo: 5, terno: 10, quaterna: 15, cinquina: 20, tombola: 50 };
 const RINTOCCHI = { ambo: 1, terno: 2, quaterna: 3, cinquina: 4 };
+// Intensità dei coriandoli: crescono con la categoria, fino alla Tombola.
+const LIVELLO_CORIANDOLI = { ambo: 1, terno: 2, quaterna: 3, cinquina: 4, tombola: 5 };
 
 // Numero minimo di estrazioni necessarie perché quella categoria sia matematicamente
 // possibile: un Ambo richiede almeno 2 numeri usciti, un Terno almeno 3, e così via.
@@ -242,6 +245,7 @@ export function mostraPremi() {
           } else {
             suonoVincita(RINTOCCHI[categoria] || 1);
           }
+          lanciaCoriandoli(LIVELLO_CORIANDOLI[categoria] || 1);
         } else {
           premio.vincitore = null;
         }

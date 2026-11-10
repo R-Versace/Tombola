@@ -1,0 +1,19 @@
+{
+  "id": "./",
+  "name": "Tabellone della Tombola Napoletana",
+  "short_name": "Tombola",
+  "description": "Tabellone digitale per la Tombola Napoletana: estrazione dei numeri, smorfia, cartelle PDF, voce del banditore e gestione dei premi.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

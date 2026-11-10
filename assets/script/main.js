@@ -24,6 +24,9 @@ import {
 import { creaTabellone, generaNumero, ridisegnaEstrazione } from './estrazione.js';
 import { toggleEstrazioneAutomatica, aggiornaIntervalloAuto, inizializzaAuto } from './auto.js';
 import { avviaParticelle, fermaParticelle, riavviaParticelle } from './animazioni.js';
+import { fermaCoriandoli } from './coriandoli.js';
+import { caricaPreferenzaSacchetto, salvaPreferenzaSacchetto } from './sacchetto.js';
+import { inizializzaPWA, installaApp } from './pwa.js';
 import {
   leggiPartitaSalvata, haPartitaDaRiprendere, applicaSalvataggio, cancellaPartitaSalvata
 } from './salvataggio.js';
@@ -46,7 +49,15 @@ function collegaInterruttori() {
   $('toggleAnimazioni').addEventListener('change', () => {
     opzioni.animazioni = $('toggleAnimazioni').checked;
     if (opzioni.animazioni) avviaParticelle();
-    else fermaParticelle();
+    else {
+      fermaParticelle();
+      fermaCoriandoli();
+    }
+  });
+
+  $('toggleSacchetto').addEventListener('change', () => {
+    opzioni.sacchetto = $('toggleSacchetto').checked;
+    salvaPreferenzaSacchetto();
   });
 
   $('toggleSuoni').addEventListener('change', () => {
@@ -86,6 +97,7 @@ function collegaControlli() {
   collegaVoceDiMenu('menuApriStorico', apriStorico);
   collegaVoceDiMenu('menuDonazione', mostraDonazione);
   collegaVoceDiMenu('menuTestaVoce', testaVoce);
+  collegaVoceDiMenu('menuInstalla', installaApp);
 }
 
 // ===================== Contenuti generati dinamicamente (delega eventi) =====================
@@ -264,6 +276,9 @@ function inizializza() {
   renderStorico();
   renderCartelleGioco();
 
+  caricaPreferenzaSacchetto();
+  $('toggleSacchetto').checked = opzioni.sacchetto;
+
   collegaInterruttori();
   collegaControlli();
   collegaListeDinamiche();
@@ -278,6 +293,7 @@ function inizializza() {
   });
 
   inizializzaSalvataggio();
+  inizializzaPWA();
 }
 
 window.addEventListener('load', inizializza);

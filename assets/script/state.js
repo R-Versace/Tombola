@@ -3,6 +3,7 @@
 export const opzioni = {
   detti: false,
   animazioni: true,
+  sacchetto: true,
   suoni: true,
   voce: true,
   leggiCifre: true,

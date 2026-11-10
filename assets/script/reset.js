@@ -12,10 +12,14 @@ import { mostraPremi } from './premi.js';
 import { azzeraStorico, renderStorico } from './storico.js';
 import { azzeraCartelle, renderCartelleGioco } from './cartelle.js';
 import { salvaPartita } from './salvataggio.js';
+import { annullaSacchetto } from './sacchetto.js';
+import { fermaCoriandoli } from './coriandoli.js';
 
 function eseguiReset() {
   fermaEstrazioneAutomatica();
   fermaVoce();
+  annullaSacchetto(); // se la pallina sta uscendo, il numero non va registrato dopo il reset
+  fermaCoriandoli();
 
   stato.numeriEstratti = [];
   ridisegnaEstrazione();
